@@ -1,0 +1,70 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model follow {
+  follower_id                     Int
+  followee_id                     Int
+  following_since                 DateTime? @db.Timestamp(6)
+  users_follow_followee_idTousers users     @relation("follow_followee_idTousers", fields: [followee_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  users_follow_follower_idTousers users     @relation("follow_follower_idTousers", fields: [follower_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([follower_id, followee_id])
+}
+
+model interaction {
+  interaction_id   Int       @id @default(autoincrement())
+  user_id          Int
+  song_id          Int
+  interaction_type String?   @db.VarChar(50)
+  created_date     DateTime? @db.Timestamp(6)
+  song             song      @relation(fields: [song_id], references: [song_id], onDelete: NoAction, onUpdate: NoAction)
+  users            users     @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model playlist {
+  playlist_id     Int             @id @default(autoincrement())
+  user_id         Int
+  title           String          @db.VarChar(255)
+  description     String?
+  privacy_setting String?         @db.VarChar(50)
+  creation_date   DateTime?       @db.Date
+  users           users           @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  playlist_song   playlist_song[]
+}
+
+model playlist_song {
+  playlist_id Int
+  song_id     Int
+  playlist    playlist @relation(fields: [playlist_id], references: [playlist_id], onDelete: NoAction, onUpdate: NoAction)
+  song        song     @relation(fields: [song_id], references: [song_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([playlist_id, song_id])
+}
+
+model song {
+  song_id       Int             @id @default(autoincrement())
+  title         String          @db.VarChar(255)
+  artist        String          @db.VarChar(255)
+  album         String?         @db.VarChar(255)
+  duration      Int?
+  genre         String?         @db.VarChar(100)
+  release_date  DateTime?       @db.Date
+  audio_file    String?         @db.VarChar(255)
+  interaction   interaction[]
+  playlist_song playlist_song[]
+}
+
+model users {
+  user_id                          Int           @id @default(autoincrement())
+  user_name                        String        @db.VarChar(50)
+  email                            String        @db.VarChar(100)
+  password_hash                    String        @db.VarChar(255)
+  subscription_type                String?       @db.VarChar(50)
+  profile_picture                  String?       @db.VarChar(255)
+  follow_follow_followee_idTousers follow[]      @relation("follow_followee_idTousers")
+  follow_follow_follower_idTousers follow[]      @relation("follow_follower_idTousers")
+  interaction                      interaction[]
+  playlist                         playlist[]
+}
