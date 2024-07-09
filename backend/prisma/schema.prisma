@@ -1,74 +1,88 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-generator client {
-   provider = "prisma-client-js"
+model users {
+  user_id       Int         @id @default(autoincrement())
+  name          String      @db.VarChar(50)
+  email         String      @unique @db.VarChar(50)
+  password      String      @db.VarChar(100)
+  date_of_birth DateTime?   @db.Date
+  profile_image String?     @db.VarChar(255)
+  followers     followers[]
+  likes         likes[]
+  playlists     playlists[]
 }
 
-model follow {
-  follower_id                     Int
-  followee_id                     Int
-  following_since                 DateTime? @db.Timestamp(6)
-  users_follow_followee_idTousers users     @relation("follow_followee_idTousers", fields: [followee_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
-  users_follow_follower_idTousers users     @relation("follow_follower_idTousers", fields: [follower_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
-
-  @@id([follower_id, followee_id])
+model albums {
+  album_id     Int       @id @default(autoincrement())
+  artist_id    Int?
+  name         String    @db.VarChar(50)
+  release_date DateTime? @db.Date
+  image        String?   @db.VarChar(255)
+  artists      artists?  @relation(fields: [artist_id], references: [artist_id], onDelete: NoAction, onUpdate: NoAction)
+  songs        songs[]
 }
 
-model interaction {
-  interaction_id   Int       @id @default(autoincrement())
-  user_id          Int
-  song_id          Int
-  interaction_type String?   @db.VarChar(50)
-  created_date     DateTime? @db.Timestamp(6)
-  song             song      @relation(fields: [song_id], references: [song_id], onDelete: NoAction, onUpdate: NoAction)
-  users            users     @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+model artists {
+  artist_id Int         @id @default(autoincrement())
+  name      String      @db.VarChar(50)
+  genre     String?     @db.VarChar(50)
+  image     String?     @db.VarChar(255)
+  albums    albums[]
+  followers followers[]
 }
 
-model playlist {
-  playlist_id     Int             @id @default(autoincrement())
-  user_id         Int
-  title           String          @db.VarChar(255)
-  description     String?
-  privacy_setting String?         @db.VarChar(50)
-  creation_date   DateTime?       @db.Date
-  users           users           @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
-  playlist_song   playlist_song[]
+model followers {
+  user_id   Int
+  artist_id Int
+  artists   artists @relation(fields: [artist_id], references: [artist_id], onDelete: NoAction, onUpdate: NoAction)
+  users     users   @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([user_id, artist_id])
 }
 
-model playlist_song {
+model likes {
+  user_id        Int
+  song_id        Int
+  like_date_time DateTime? @db.Timestamp(6)
+  songs          songs     @relation(fields: [song_id], references: [song_id], onDelete: NoAction, onUpdate: NoAction)
+  users          users     @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([user_id, song_id])
+}
+
+model playlist_songs {
   playlist_id Int
   song_id     Int
-  playlist    playlist @relation(fields: [playlist_id], references: [playlist_id], onDelete: NoAction, onUpdate: NoAction)
-  song        song     @relation(fields: [song_id], references: [song_id], onDelete: NoAction, onUpdate: NoAction)
+  Order       Int?
+  playlists   playlists @relation(fields: [playlist_id], references: [playlist_id], onDelete: NoAction, onUpdate: NoAction)
+  songs       songs     @relation(fields: [song_id], references: [song_id], onDelete: NoAction, onUpdate: NoAction)
 
   @@id([playlist_id, song_id])
 }
 
-model song {
-  song_id       Int             @id @default(autoincrement())
-  title         String          @db.VarChar(255)
-  artist        String          @db.VarChar(255)
-  album         String?         @db.VarChar(255)
-  duration      Int?
-  genre         String?         @db.VarChar(100)
-  release_date  DateTime?       @db.Date
-  audio_file    String?         @db.VarChar(255)
-  interaction   interaction[]
-  playlist_song playlist_song[]
+model playlists {
+  playlist_id    Int              @id @default(autoincrement())
+  user_id        Int?
+  name           String           @db.VarChar(50)
+  image          String?          @db.VarChar(255)
+  playlist_songs playlist_songs[]
+  users          users?           @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
 }
 
-model users {
-  user_id                          Int           @id @default(autoincrement())
-  user_name                        String        @db.VarChar(50)
-  email                            String        @db.VarChar(100)
-  password_hash                    String        @db.VarChar(255)
-  subscription_type                String?       @db.VarChar(50)
-  profile_picture                  String?       @db.VarChar(255)
-  follow_follow_followee_idTousers follow[]      @relation("follow_followee_idTousers")
-  follow_follow_follower_idTousers follow[]      @relation("follow_follower_idTousers")
-  interaction                      interaction[]
-  playlist                         playlist[]
+model songs {
+  song_id        Int              @id @default(autoincrement())
+  album_id       Int?
+  name           String           @db.VarChar(50)
+  duration       Int
+  path           String?          @db.VarChar(255)
+  likes          likes[]
+  playlist_songs playlist_songs[]
+  albums         albums?          @relation(fields: [album_id], references: [album_id], onDelete: NoAction, onUpdate: NoAction)
 }
