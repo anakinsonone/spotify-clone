@@ -1,87 +1,110 @@
 -- CreateTable
-CREATE TABLE "follow" (
-    "follower_id" INTEGER NOT NULL,
-    "followee_id" INTEGER NOT NULL,
-    "following_since" TIMESTAMP(6),
-
-    CONSTRAINT "follow_pkey" PRIMARY KEY ("follower_id","followee_id")
-);
-
--- CreateTable
-CREATE TABLE "interaction" (
-    "interaction_id" SERIAL NOT NULL,
-    "user_id" INTEGER NOT NULL,
-    "song_id" INTEGER NOT NULL,
-    "interaction_type" VARCHAR(50),
-    "created_date" TIMESTAMP(6),
-
-    CONSTRAINT "interaction_pkey" PRIMARY KEY ("interaction_id")
-);
-
--- CreateTable
-CREATE TABLE "playlist" (
-    "playlist_id" SERIAL NOT NULL,
-    "user_id" INTEGER NOT NULL,
-    "title" VARCHAR(255) NOT NULL,
-    "description" TEXT,
-    "privacy_setting" VARCHAR(50),
-    "creation_date" DATE,
-
-    CONSTRAINT "playlist_pkey" PRIMARY KEY ("playlist_id")
-);
-
--- CreateTable
-CREATE TABLE "playlist_song" (
-    "playlist_id" INTEGER NOT NULL,
-    "song_id" INTEGER NOT NULL,
-
-    CONSTRAINT "playlist_song_pkey" PRIMARY KEY ("playlist_id","song_id")
-);
-
--- CreateTable
-CREATE TABLE "song" (
-    "song_id" SERIAL NOT NULL,
-    "title" VARCHAR(255) NOT NULL,
-    "artist" VARCHAR(255) NOT NULL,
-    "album" VARCHAR(255),
-    "duration" INTEGER,
-    "genre" VARCHAR(100),
-    "release_date" DATE,
-    "audio_file" VARCHAR(255),
-
-    CONSTRAINT "song_pkey" PRIMARY KEY ("song_id")
-);
-
--- CreateTable
 CREATE TABLE "users" (
     "user_id" SERIAL NOT NULL,
-    "user_name" VARCHAR(50) NOT NULL,
-    "email" VARCHAR(100) NOT NULL,
-    "password_hash" VARCHAR(255) NOT NULL,
-    "subscription_type" VARCHAR(50),
-    "profile_picture" VARCHAR(255),
+    "name" VARCHAR(50) NOT NULL,
+    "email" VARCHAR(50) NOT NULL,
+    "password" VARCHAR(100) NOT NULL,
+    "date_of_birth" DATE,
+    "profile_image" VARCHAR(255),
 
     CONSTRAINT "users_pkey" PRIMARY KEY ("user_id")
 );
 
--- AddForeignKey
-ALTER TABLE "follow" ADD CONSTRAINT "follow_followee_id_fkey" FOREIGN KEY ("followee_id") REFERENCES "users"("user_id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+-- CreateTable
+CREATE TABLE "albums" (
+    "album_id" SERIAL NOT NULL,
+    "artist_id" INTEGER,
+    "name" VARCHAR(50) NOT NULL,
+    "release_date" DATE,
+    "image" VARCHAR(255),
+
+    CONSTRAINT "albums_pkey" PRIMARY KEY ("album_id")
+);
+
+-- CreateTable
+CREATE TABLE "artists" (
+    "artist_id" SERIAL NOT NULL,
+    "name" VARCHAR(50) NOT NULL,
+    "genre" VARCHAR(50),
+    "image" VARCHAR(255),
+
+    CONSTRAINT "artists_pkey" PRIMARY KEY ("artist_id")
+);
+
+-- CreateTable
+CREATE TABLE "followers" (
+    "user_id" INTEGER NOT NULL,
+    "artist_id" INTEGER NOT NULL,
+
+    CONSTRAINT "followers_pkey" PRIMARY KEY ("user_id","artist_id")
+);
+
+-- CreateTable
+CREATE TABLE "likes" (
+    "user_id" INTEGER NOT NULL,
+    "song_id" INTEGER NOT NULL,
+    "like_date_time" TIMESTAMP(6),
+
+    CONSTRAINT "likes_pkey" PRIMARY KEY ("user_id","song_id")
+);
+
+-- CreateTable
+CREATE TABLE "playlist_songs" (
+    "playlist_id" INTEGER NOT NULL,
+    "song_id" INTEGER NOT NULL,
+    "Order" INTEGER,
+
+    CONSTRAINT "playlist_songs_pkey" PRIMARY KEY ("playlist_id","song_id")
+);
+
+-- CreateTable
+CREATE TABLE "playlists" (
+    "playlist_id" SERIAL NOT NULL,
+    "user_id" INTEGER,
+    "name" VARCHAR(50) NOT NULL,
+    "image" VARCHAR(255),
+
+    CONSTRAINT "playlists_pkey" PRIMARY KEY ("playlist_id")
+);
+
+-- CreateTable
+CREATE TABLE "songs" (
+    "song_id" SERIAL NOT NULL,
+    "album_id" INTEGER,
+    "name" VARCHAR(50) NOT NULL,
+    "duration" INTEGER NOT NULL,
+    "path" VARCHAR(255),
+
+    CONSTRAINT "songs_pkey" PRIMARY KEY ("song_id")
+);
+
+-- CreateIndex
+CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
 
 -- AddForeignKey
-ALTER TABLE "follow" ADD CONSTRAINT "follow_follower_id_fkey" FOREIGN KEY ("follower_id") REFERENCES "users"("user_id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "albums" ADD CONSTRAINT "albums_artist_id_fkey" FOREIGN KEY ("artist_id") REFERENCES "artists"("artist_id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "interaction" ADD CONSTRAINT "interaction_song_id_fkey" FOREIGN KEY ("song_id") REFERENCES "song"("song_id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "followers" ADD CONSTRAINT "followers_artist_id_fkey" FOREIGN KEY ("artist_id") REFERENCES "artists"("artist_id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "interaction" ADD CONSTRAINT "interaction_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("user_id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "followers" ADD CONSTRAINT "followers_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("user_id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "playlist" ADD CONSTRAINT "playlist_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("user_id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "likes" ADD CONSTRAINT "likes_song_id_fkey" FOREIGN KEY ("song_id") REFERENCES "songs"("song_id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "playlist_song" ADD CONSTRAINT "playlist_song_playlist_id_fkey" FOREIGN KEY ("playlist_id") REFERENCES "playlist"("playlist_id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "likes" ADD CONSTRAINT "likes_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("user_id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "playlist_song" ADD CONSTRAINT "playlist_song_song_id_fkey" FOREIGN KEY ("song_id") REFERENCES "song"("song_id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "playlist_songs" ADD CONSTRAINT "playlist_songs_playlist_id_fkey" FOREIGN KEY ("playlist_id") REFERENCES "playlists"("playlist_id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+-- AddForeignKey
+ALTER TABLE "playlist_songs" ADD CONSTRAINT "playlist_songs_song_id_fkey" FOREIGN KEY ("song_id") REFERENCES "songs"("song_id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+-- AddForeignKey
+ALTER TABLE "playlists" ADD CONSTRAINT "playlists_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("user_id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+-- AddForeignKey
+ALTER TABLE "songs" ADD CONSTRAINT "songs_album_id_fkey" FOREIGN KEY ("album_id") REFERENCES "albums"("album_id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
