@@ -1,8 +1,10 @@
-import express, { Express, Request, Response } from "express";
+import bodyParser from "body-parser";
 import "dotenv/config";
 
 const app: Express = express();
 const port = process.env.PORT || 3000;
+
+app.use(bodyParser());
 
 app.get("/", (req: Request, res: Response) => {
   res.send("Express + Typescript Server");
