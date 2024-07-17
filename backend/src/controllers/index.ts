@@ -1,3 +1,3 @@
-export * from "./artists";
-export * from "./albums";
-export * from "./songs";
+export * from "./artistController";
+export * from "./albumController";
+export * from "./songController";
