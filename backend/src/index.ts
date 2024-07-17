@@ -1,4 +1,3 @@
-import bodyParser from "body-parser";
 import "dotenv/config";
 import express, { Express, Request, Response } from "express";
 
@@ -8,7 +7,7 @@ import { AlbumRouter, ArtistsRouter, SongsRouter } from "./routes";
 const app: Express = express();
 const port = process.env.PORT || 3000;
 
-app.use(bodyParser());
+app.use(express.json());
 
 app.get("/", (req: Request, res: Response) => {
   res.send("Express + Typescript Server");
