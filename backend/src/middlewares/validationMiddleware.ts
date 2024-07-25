@@ -1,6 +1,6 @@
 import { body } from "express-validator";
 
-export const userValidationRules = [
+export const userRegistrationValidationRules = [
   body("name")
     .trim()
     .isLength({ min: 3, max: 30 })
@@ -21,7 +21,7 @@ export const userValidationRules = [
     .trim()
     .isEmail()
     .withMessage("Must be a valid email address.")
-    .normalizeEmail(),
+    .escape(),
   body("password")
     .trim()
     .isLength({ min: 8, max: 24 })
