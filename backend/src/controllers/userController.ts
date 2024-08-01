@@ -63,7 +63,7 @@ export const loginUser = async (user: any) => {
   }
 
   if (await argon2.verify(userExists.password, password)) {
-    return true;
+    return userExists;
   } else {
     throw new Error(`Invalid login details.`);
   }
