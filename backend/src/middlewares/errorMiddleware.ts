@@ -5,6 +5,8 @@ interface CustomError extends Error {
   errors?: any[];
 }
 
+const dev = process.env.NODE_ENV === "development";
+
 export const errorHandler = (
   err: CustomError,
   req: Request,
@@ -26,5 +28,8 @@ export const errorHandler = (
     }));
   }
 
+  if (dev) {
+    console.error(`%c${err.message}\n${err.stack}`, "color: red");
+  }
   res.status(status).json(response);
 };
