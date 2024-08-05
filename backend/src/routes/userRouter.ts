@@ -57,7 +57,7 @@ UserRouter.post("/login", async (req, res, next) => {
     );
 
     req.session.user = { id: login.user_id.toString() };
-    res.cookie("uid", login.user_id).status(200).json("Logged in");
+    res.status(200).json("Logged in");
   } catch (error) {
     next(error);
   }
