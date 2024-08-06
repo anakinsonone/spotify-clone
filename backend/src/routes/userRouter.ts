@@ -3,7 +3,6 @@ import { registerUser, loginUser } from "../controllers";
 import multer from "multer";
 import path from "path";
 import { validationResult } from "express-validator";
-import { redisClient } from "../services/redis";
 
 import { userRegistrationValidationRules } from "../middlewares";
 
@@ -48,13 +47,6 @@ UserRouter.post(
 UserRouter.post("/login", async (req, res, next) => {
   try {
     const login = await loginUser(req.body);
-
-    await redisClient.set(
-      `user:${login.user_id}`,
-      login.name,
-      "EX",
-      1 * 365 * 24 * 60 * 60, // 1 year
-    );
 
     req.session.user = { id: login.user_id.toString() };
     res.status(200).json("Logged in");
