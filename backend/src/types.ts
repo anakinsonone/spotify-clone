@@ -7,6 +7,7 @@ export type SongsCreateInput = Prisma.songsCreateInput;
 
 declare module "express-session" {
   interface SessionData {
-    user?: { id: string };
+    isLoggedIn?: boolean;
+    username?: string;
   }
 }
