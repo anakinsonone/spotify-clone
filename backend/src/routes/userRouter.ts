@@ -1,9 +1,9 @@
 import { Router, Request, Response, NextFunction } from "express";
-import { registerUser, loginUser } from "../controllers";
 import multer from "multer";
 import path from "path";
 import { validationResult } from "express-validator";
 
+import { registerUser, loginUser } from "../controllers";
 import { userRegistrationValidationRules } from "../middlewares";
 
 const storage = multer.diskStorage({
@@ -55,7 +55,3 @@ UserRouter.post("/login", async (req, res, next) => {
     next(error);
   }
 });
-
-// UserRouter.post("/checkAuth", async(req, res, next) => {
-//
-// })
