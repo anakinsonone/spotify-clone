@@ -5,6 +5,7 @@ import { validationResult } from "express-validator";
 
 import { registerUser, loginUser } from "../controllers";
 import { userRegistrationValidationRules } from "../middlewares";
+import { checkAuth } from "../middlewares/authMiddleware";
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -51,6 +52,33 @@ UserRouter.post("/login", async (req, res, next) => {
     req.session.isLoggedIn = true;
     req.session.username = login.name;
     res.status(200).json("Logged in");
+  } catch (error) {
+    next(error);
+  }
+});
+
+UserRouter.post("/logout", (req, res, next) => {
+  try {
+    if (req.session && req.session.isLoggedIn) {
+      req.session.destroy((err: Error) => {
+        if (err) {
+          throw err;
+        }
+      });
+
+      res.clearCookie("connect.sid");
+      res.status(200).json({ message: "Logged out successfully." });
+    } else {
+      throw { message: "Could not logout, please try again" };
+    }
+  } catch (error) {
+    next(error);
+  }
+});
+
+UserRouter.get("/protected", checkAuth, async (req, res, next) => {
+  try {
+    res.status(200).json({ message: "This is a protected path." });
   } catch (error) {
     next(error);
   }
