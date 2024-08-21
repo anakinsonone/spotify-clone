@@ -9,7 +9,7 @@
 /coverage
 
 # next.js
-/.next/
+.next/
 /out/
 
 # production
@@ -37,3 +37,4 @@ next-env.d.ts
 *.vim
 node_modules
 .env
+uploads/
