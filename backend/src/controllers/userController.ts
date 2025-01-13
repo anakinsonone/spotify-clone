@@ -65,18 +65,24 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
   }
 };
 
-export const loginUser = async (user: any) => {
-  const { email, password } = user;
+export const loginUser = async (req: Request, res: Response, next: NextFunction) => {
+  try {
 
-  const userExists = await prisma.users.findUnique({ where: { email } });
+    const { email, password } = req.body;
 
-  if (!userExists) {
-    throw new Error(`This email is not registered.`);
-  }
+    const userExists = await prisma.users.findUnique({ where: { email } });
 
-  if (await argon2.verify(userExists.password, password)) {
-    return userExists;
-  } else {
-    throw new Error(`Invalid login details.`);
+    if (!userExists) {
+      throw new Error(`This email is not registered.`);
+    }
+
+    if (!await argon2.verify(userExists.password, password)) {
+      throw new Error(`Invalid login details.`);
+    }
+    req.session.isLoggedIn = true;
+    req.session.username = userExists.name;
+    res.status(200).json("Logged in");
+  } catch (error) {
+    next(error);
   }
 };

@@ -28,17 +28,7 @@ UserRouter.post(
   registerUser,
 );
 
-UserRouter.post("/login", async (req, res, next) => {
-  try {
-    const login = await loginUser(req.body);
-
-    req.session.isLoggedIn = true;
-    req.session.username = login.name;
-    res.status(200).json("Logged in");
-  } catch (error) {
-    next(error);
-  }
-});
+UserRouter.post("/login", loginUser);
 
 UserRouter.post("/logout", (req, res, next) => {
   try {
