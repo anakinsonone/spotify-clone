@@ -1,6 +1,8 @@
-import { Prisma } from "@prisma/client";
-import { prisma } from "../db/prismaClient";
 import argon2 from "argon2";
+import { NextFunction, Request, Response } from "express";
+import { validationResult } from "express-validator";
+
+import { prisma } from "../db/prismaClient";
 
 const options = {
   type: argon2.argon2id,
@@ -29,28 +31,38 @@ const isUserRegistered = async (email: string) => {
   return true;
 };
 
-export const registerUser = async (user: Prisma.usersCreateInput) => {
-  const { name, email, password, date_of_birth, profile_image } = user;
+export const registerUser = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      throw { status: 400, errors: errors.array() };
+    }
 
-  if (await isUserRegistered(email)) {
-    throw { status: 400, message: "This email is already in use." };
+    const { name, email, password, date_of_birth } = req.body;
+    const profile_image = req.file?.path
+
+    if (await isUserRegistered(email)) {
+      throw { status: 400, message: "This email is already in use." };
+    }
+
+    const hashedPassword = await hashPassword(password);
+
+    const dob = date_of_birth ? new Date(date_of_birth) : new Date();
+    const dobISO = dob.toISOString();
+    const newUser = await prisma.users.create({
+      data: {
+        name,
+        password: hashedPassword,
+        email,
+        date_of_birth: dobISO,
+        profile_image,
+      },
+    });
+
+    res.status(201).json("User Registered!")
+  } catch (error) {
+    next(error);
   }
-
-  const hashedPassword = await hashPassword(password);
-
-  const dob = date_of_birth ? new Date(date_of_birth) : new Date();
-  const dobISO = dob.toISOString();
-  const newUser = await prisma.users.create({
-    data: {
-      name,
-      password: hashedPassword,
-      email,
-      date_of_birth: dobISO,
-      profile_image,
-    },
-  });
-
-  return "user registered!";
 };
 
 export const loginUser = async (user: any) => {

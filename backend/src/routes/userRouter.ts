@@ -1,9 +1,8 @@
-import { Router, Request, Response, NextFunction } from "express";
+import { Router } from "express";
 import multer from "multer";
 import path from "path";
-import { validationResult } from "express-validator";
 
-import { registerUser, loginUser } from "../controllers";
+import { loginUser, registerUser } from "../controllers";
 import { userRegistrationValidationRules } from "../middlewares";
 import { checkAuth } from "../middlewares/authMiddleware";
 
@@ -26,23 +25,7 @@ UserRouter.post(
   "/register",
   upload.single("profile_image"),
   userRegistrationValidationRules,
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        throw { status: 400, errors: errors.array() };
-      }
-
-      const newUser = await registerUser({
-        ...req.body,
-        profile_image: req.file?.path,
-      });
-
-      res.status(200).json(newUser);
-    } catch (error) {
-      next(error);
-    }
-  },
+  registerUser,
 );
 
 UserRouter.post("/login", async (req, res, next) => {
